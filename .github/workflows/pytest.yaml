@@ -37,7 +37,7 @@ jobs:
       - name: Display system information
         run: kinnd sys-info --developer
       - name: Run pytest
-        run: pytest template --cov=template --cov-report=xml --cov-config=pyproject.toml
+        run: pytest kinnd --cov=kinnd --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
@@ -73,7 +73,7 @@ jobs:
       - name: Display system information
         run: kinnd sys-info --developer
       - name: Run pytest
-        run: pytest template --cov=template --cov-report=xml --cov-config=pyproject.toml
+        run: pytest kinnd --cov=kinnd --cov-report=xml --cov-config=pyproject.toml
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:
