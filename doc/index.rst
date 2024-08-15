@@ -1,7 +1,7 @@
 .. include:: ./links.inc
 
-**template-python**
-===================
+**KiNND**
+=========
 
 .. toctree::
    :hidden:

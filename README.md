@@ -21,11 +21,11 @@ following steps are required:
     - [x] Under `[tool.setuptools.packages.find]`, edit the file inclusion/exclusion patterns
     - [x] Under `[tool.pydocstyle]`, edit the matching pattern `match-dir`
     - [x] Under `[tool.coverage.run]`, edit the exclusion patterns `omit`
-- [ ] Edit the GitHub workflows
+- [x] Edit the GitHub workflows
     - [x] In `doc.yaml`, edit the command for system information
     - [x] In `publish.yaml`, uncomment the trigger on release and edit the command for system information
     - [x] In `pytest.yaml`, edit the commands for system information and pytest
-- [ ] Edit the pre-commit configuration
+- [x] Edit the pre-commit configuration
     - [x] Edit the paths in `.pre-commit-config.yaml`
     - [x] Enable `pre-commit.ci` on https://pre-commit.ci/
 - [ ] Edit `README.md`
@@ -42,17 +42,17 @@ repository).
 If the documentation build is preserved, the following steps are required:
 
 On the `main` branch:
-- [ ] Edit the GitHub workflows
-    - [ ] In `doc.yaml`, edit the command for system information
-- [ ] Edit the project links in `doc\links.inc`
-- [ ] Edit the landing page `index.rst`
-- [ ] Edit the sphinx configuration
-    - [ ] Replace `import template` with the correct package name
-    - [ ] Edit the fields `project`, `author`, `release`, `package` and `gh_url`
-- [ ] Edit the API pages
-    - [ ] In `doc\api\index.rst`, edit the package name
-    - [ ] In `doc\api\logging.rst`, edit the current module
-- [ ] Edit the logging tutorial to replace `from template import` with the correct package name
+- [x] Edit the GitHub workflows
+    - [x] In `doc.yaml`, edit the command for system information
+- [x] Edit the project links in `doc\links.inc`
+- [x] Edit the landing page `index.rst`
+- [x] Edit the sphinx configuration
+    - [x] Replace `import template` with the correct package name
+    - [x] Edit the fields `project`, `author`, `release`, `package` and `gh_url`
+- [x] Edit the API pages
+    - [x] In `doc\api\index.rst`, edit the package name
+    - [x] In `doc\api\logging.rst`, edit the current module
+- [x] Edit the logging tutorial to replace `from template import` with the correct package name
 
 On the `gh-pages` branch:
 - [ ] Edit the links in the landing page `index.html`

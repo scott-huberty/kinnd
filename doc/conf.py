@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 from intersphinx_registry import get_intersphinx_mapping
 from sphinx_gallery.sorting import FileNameSortKey
 
-import template
+import kinnd
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -22,12 +22,12 @@ if TYPE_CHECKING:
 # -- project information ---------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "template-python"
-author = "Mathieu Scheltienne"
+project = "kinnd"
+author = "Scott Huberty"
 copyright = f"{date.today().year}, {author}"
-release = template.__version__
-package = template.__name__
-gh_url = "https://github.com/mscheltienne/template-python"
+release = kinnd.__version__
+package = kinnd.__name__
+gh_url = "https://github.com/scott-huberty/kinnd"
 
 # -- general configuration -------------------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

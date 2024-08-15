@@ -10,11 +10,9 @@
 
 .. project
 
-.. _project pypi: https://pypi.org/project/template-python/
-.. _project conda: https://anaconda.org/conda-forge/template-python
-.. _project github: https://github.com/mscheltienne/template-python
-.. _project citation: https://github.com/mscheltienne/template-python/blob/main/CITATION.cff
-.. _project license: https://github.com/mscheltienne/template-python/blob/main/LICENSE
+.. _project github: https://github.com/scott-huberty/kinnd
+.. _project citation: https://github.com/scott-huberty/kinnd/blob/main/CITATION.cff
+.. _project license: https://github.com/scott-huberty/kinnd/blob/main/LICENSE
 
 
 .. license

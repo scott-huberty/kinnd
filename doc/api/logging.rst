@@ -1,7 +1,7 @@
 Logging
 =======
 
-.. currentmodule:: template
+.. currentmodule:: kinnd
 
 .. autosummary::
     :toctree: generated/
