@@ -1,7 +1,7 @@
 extends: default
 
 ignore: |
-  conda-forge/recipes/template/meta.yaml
+  conda-forge/recipes/kinnd/meta.yaml
 
 rules:
   line-length: disable

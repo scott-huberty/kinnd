@@ -31,7 +31,7 @@ jobs:
           python -m pip install --quiet uv
           uv pip install --quiet --system .[doc]
       - name: Display system information
-        run: template sys-info --developer
+        run: kinnd sys-info --developer
       - name: Build doc
         run: make -C doc html
       - name: Prune sphinx environment

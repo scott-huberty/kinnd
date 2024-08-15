@@ -3,7 +3,7 @@ repos:
       rev: 5.13.2
       hooks:
           - id: isort
-            files: template
+            files: kinnd
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.5.7
@@ -11,10 +11,10 @@ repos:
           - id: ruff
             name: ruff linter
             args: [--fix, --show-fixes]
-            files: template
+            files: kinnd
           - id: ruff-format
             name: ruff formatter
-            files: template
+            files: kinnd
 
     - repo: https://github.com/codespell-project/codespell
       rev: v2.3.0
@@ -23,12 +23,6 @@ repos:
             args: [--write-changes]
             additional_dependencies: [tomli]
 
-    - repo: https://github.com/pycqa/pydocstyle
-      rev: 6.3.0
-      hooks:
-          - id: pydocstyle
-            files: template
-            additional_dependencies: [tomli]
 
     - repo: https://github.com/mscheltienne/bibclean
       rev: 0.8.0

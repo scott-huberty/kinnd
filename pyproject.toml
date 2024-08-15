@@ -4,7 +4,7 @@ requires = ['setuptools >= 64.0.0']
 
 [project]
 authors = [
-  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
+  {email = 'seh33@uw.edu', name = 'Scott Huberty'},
 ]
 classifiers = [
   'License :: OSI Approved :: MIT License',
@@ -20,31 +20,33 @@ classifiers = [
 ]
 dependencies = [
   'click',
+  'mffpy',
   'numpy>=1.21,<3',
-  'packaging',
+  'mne',
   'psutil',
+  'packaging',
 ]
-description = 'Template for python projects.'
+description = 'Scripts for analyzing data in the Kids with Neurogenetic and Developmental Disabilities Lab at USC.'
 keywords = [
   'python',
-  'template',
+  'neuroscience',
 ]
 license = {file = 'LICENSE'}
 maintainers = [
-  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
+  {email = 'seh33@uw.edu', name = 'Scott Huberty'},
 ]
-name = 'template'
+name = 'kinnd'
 readme = 'README.md'
 requires-python = '>=3.9'
 version = '0.1.0'
 
 [project.optional-dependencies]
 all = [
-  'template[build]',
-  'template[doc]',
-  'template[stubs]',
-  'template[style]',
-  'template[test]',
+  'kinnd[build]',
+  'kinnd[doc]',
+  'kinnd[stubs]',
+  'kinnd[style]',
+  'kinnd[test]',
 ]
 build = [
   'build',
@@ -64,7 +66,7 @@ doc = [
   'sphinxcontrib-bibtex',
 ]
 full = [
-  'template[all]',
+  'kinnd[all]',
 ]
 stubs = [
   'isort',
@@ -75,7 +77,6 @@ style = [
   'bibclean',
   'codespell[toml]>=2.2.4',
   'isort',
-  'pydocstyle[toml]',
   'ruff>=0.1.8',
   'toml-sort',
   'yamllint',
@@ -87,13 +88,13 @@ test = [
 ]
 
 [project.scripts]
-template = 'template.commands.main:run'
+kinnd = "kinnd.commands.main:run"
 
 [project.urls]
-documentation = 'https://github.com/mscheltienne/template-python'
-homepage = 'https://github.com/mscheltienne/template-python'
-source = 'https://github.com/mscheltienne/template-python'
-tracker = 'https://github.com/mscheltienne/template-python/issues'
+documentation = 'https://github.com/scott-huberty/kinnd'
+homepage = 'https://github.com/scott-huberty/kinnd'
+source = 'https://github.com/scott-huberty/kinnd'
+tracker = 'https://github.com/scott-huberty/kinnd/issues'
 
 [tool.codespell]
 check-filenames = true
@@ -115,8 +116,8 @@ cover_pylib = false
 omit = [
   '**/__init__.py',
   '**/conftest.py',
-  '**/template/_version.py',
-  '**/template/utils/_fixes.py',
+  '**/kinnd/_version.py',
+  '**/kinnd/utils/_fixes.py',
   '**/tests/**',
 ]
 
@@ -130,13 +131,6 @@ line_length = 88
 multi_line_output = 3
 profile = 'black'
 py_version = 39
-
-[tool.pydocstyle]
-add_ignore = 'D100,D104,D107'
-convention = 'numpy'
-ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!__init__|test_).*\.py'
-match-dir = '^template.*'
 
 [tool.pytest.ini_options]
 addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
@@ -165,12 +159,19 @@ select = ['A', 'B', 'E', 'F', 'G', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
 '*.pyi' = ['E501']
 '__init__.py' = ['F401']
 
+[tool.ruff.lint.pydocstyle]
+add_ignore = 'D100,D104,D107'
+convention = 'numpy'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
+match = '^(?!__init__|test_).*\.py'
+match-dir = '^kinnd.*'
+
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-exclude = ['template*tests']
-include = ['template*']
+exclude = ['kinnd*tests']
+include = ['kinnd*']
 
 [tool.tomlsort]
 all = true

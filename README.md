@@ -12,24 +12,24 @@
 Template python repository. To bootstrap a project from this template, the
 following steps are required:
 
-- [ ] Rename the folder `template` to the package name
-- [ ] Edit `pyproject.toml`
-    - [ ] Under `[project]`, edit `name`, `description` and `keywords`
-    - [ ] Under `[project.optional-dependencies]`, edit the extra-keys `all` and `full`
-    - [ ] Under `[project.urls]`, edit all the URLs
-    - [ ] Under `[project.scripts]`, edit the command for system information
-    - [ ] Under `[tool.setuptools.packages.find]`, edit the file inclusion/exclusion patterns
-    - [ ] Under `[tool.pydocstyle]`, edit the matching pattern `match-dir`
-    - [ ] Under `[tool.coverage.run]`, edit the exclusion patterns `omit`
+- [x] Rename the folder `template` to the package name
+- [x] Edit `pyproject.toml`
+    - [x] Under `[project]`, edit `name`, `description` and `keywords`
+    - [x] Under `[project.optional-dependencies]`, edit the extra-keys `all` and `full`
+    - [x] Under `[project.urls]`, edit all the URLs
+    - [x] Under `[project.scripts]`, edit the command for system information
+    - [x] Under `[tool.setuptools.packages.find]`, edit the file inclusion/exclusion patterns
+    - [x] Under `[tool.pydocstyle]`, edit the matching pattern `match-dir`
+    - [x] Under `[tool.coverage.run]`, edit the exclusion patterns `omit`
 - [ ] Edit the GitHub workflows
-    - [ ] In `doc.yaml`, edit the command for system information
-    - [ ] In `publish.yaml`, uncomment the trigger on release and edit the command for system information
-    - [ ] In `pytest.yaml`, edit the commands for system information and pytest
+    - [x] In `doc.yaml`, edit the command for system information
+    - [x] In `publish.yaml`, uncomment the trigger on release and edit the command for system information
+    - [x] In `pytest.yaml`, edit the commands for system information and pytest
 - [ ] Edit the pre-commit configuration
-    - [ ] Edit the paths in `.pre-commit-config.yaml`
-    - [ ] Enable `pre-commit.ci` on https://pre-commit.ci/
+    - [x] Edit the paths in `.pre-commit-config.yaml`
+    - [x] Enable `pre-commit.ci` on https://pre-commit.ci/
 - [ ] Edit `README.md`
-- [ ] Edit `MANIFEST.in`
+- [x] Edit `MANIFEST.in`
 - [ ] Edit the keys to list in the system information
 - [ ] Remove the conda-forge recipe from the ignored files in ``.yamllint.yaml``
 
