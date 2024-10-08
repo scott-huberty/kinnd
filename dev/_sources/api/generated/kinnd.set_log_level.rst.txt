@@ -1,0 +1,9 @@
+﻿kinnd.set\_log\_level
+=====================
+
+.. currentmodule:: kinnd
+
+.. autofunction:: set_log_level
+
+.. minigallery:: kinnd.set_log_level
+    :add-heading:
