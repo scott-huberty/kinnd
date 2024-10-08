@@ -29,7 +29,7 @@ def fix_event_ids(ep):
     mne.epochs.combine_event_ids(ep, stim_ids, new_event_id=event_id, copy=False)
     return ep
 
-def read_epochs_semantics(subject, drop_bad=True, verbose="INFO"):
+def read_epochs_semantics(fpath_dict, subject, drop_bad=True, verbose="INFO"):
     """Read data from disk for a single subject in the Semantics dataset.
 
     .. note::
@@ -39,9 +39,14 @@ def read_epochs_semantics(subject, drop_bad=True, verbose="INFO"):
 
     Parameters
     ----------
+    fpath_dict : dict
+        The dictionary of dictionaries returned by `get_semantics_fpaths`, where the
+        keys are the subject IDs and the values are dictionaries with keys 'match' and
+        'mismatch' that point to the file paths for the match and mismatch conditions,
+        respectively.
     subject : str
         The subject ID to load. Should be in the format 'sub-XX', such as 'sub-01',
-        or 'sub-3027'.
+        or 'sub-3027'. The subject ID should be a key in the `fpath_dict` dictionary.
     drop_bad : bool
         Whether to drop epochs that overlap with BAD+ events from the data.
         Default is True.
@@ -54,7 +59,7 @@ def read_epochs_semantics(subject, drop_bad=True, verbose="INFO"):
     mne.Epochs
         The epochs object for the specified subject.
     """
-    fpaths = get_semantics_fpaths()
+    fpaths = fpath_dict
     if subject not in fpaths:
         msg = f"Subject {subject} not found in the Semantics data."
         hint = "Hint: Call get_semantics_fpaths() to see the available subjects."
