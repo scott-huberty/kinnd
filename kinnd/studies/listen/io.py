@@ -4,20 +4,58 @@ import datetime
 import mne
 
 from pathlib import Path
-from warnings import warn
 
-def read_raw_listen(filename):
+
+
+def get_cel_map(events_eci):
+    """Return a dictionary mapping from CEL codes to human readable conditions.
+
+    For example for the semantics task, this should return a dictionary like:
+    {"1": "match", "2": "mismatch"}. For the phonemes task, this should return
+    {"1": "Standard", "2": "Deviant"}.
+    """
+    at_cell_events = False
+    cel_map = {}
+    for event in events_eci:
+        if at_cell_events and event["code"] != "CELL":
+            return cel_map
+        if event["code"] == "CELL":
+            at_cell_events = True
+        if at_cell_events:
+            cel_map[event["keys"]["cel#"]] = event["label"]
+    return cel_map
+
+
+def read_raw_listen(filename, event_mapping=None, condition_mapping=None):
     """Read an MFF file from the Listen study into MNE-Python.
 
     Parameters
     ----------
     filename : str or Path
         The path to the MFF file.
+    event_mapping : dict
+        A custom mapping of event codes to human readable descriptions. If None, no
+        mapping is done, and the event codes themselves used as the `mne.Annotations`
+        descriptions. For example, for the semantics task, you might use
+        `{"img+": "image", "snd+": "word"}`.
+    condition_mapping : dict
+        A custom mapping of CEL codes to human readable condition labels. If ``None``,
+        This function will try to extrac the mapping from the CEL codes at the
+        beginning of the ``'EVENTS_ECI[...].xml'`` file. If this fails, you should
+        provide a mapping here. For example, for the semantics task, you would pass
+        ``{"1": "match", "2": "mismatch"}``. For the phonemes task, you would pass
+        ``{"1": "Standard", "2": "Deviant"}``.
 
     Returns
     -------
     raw : mne.io.Raw
         The EEG data as an MNE-Python `~mne.io.Raw` object.
+
+    Notes
+    -----
+    This function is for reading EGI source files from the Listen study, so that they
+    can be BIDS standardized. It is not intended for analyses. Instead, use
+    ``kinnd.io.read_raw_bids`` for that purpose.
     """
     import mffpy
 
@@ -64,9 +102,11 @@ def read_raw_listen(filename):
     raw = mne.io.RawArray(eeg, info)
 
     # Annotations
-    cel_map = {"1": "match", "2": "mismatch"}
-    WANT_EVENTS = ["img+", "snd+"]
-    stim_map = {"img+": "image", "snd+": "word"}
+    if condition_mapping is None:
+        event_eci = [k for k in categories_dict.keys() if "ECI" in k]
+        assert len(event_eci) == 1
+        event_eci = categories_dict[event_eci[0]]
+        condition_mapping = get_cel_map(event_eci)
 
     onsets = []
     durations = []
@@ -81,9 +121,9 @@ def read_raw_listen(filename):
                 # Skip these events to keep the annotations clean
                 # Isi+ is weird because the onset is outside the recording. Corrupted?
                 continue
-            elif event["code"] in WANT_EVENTS:
-                condition = cel_map[str(event["keys"]["cel#"])]
-                description = f"{stim_map[event['code']]}_{condition}"
+            elif event_mapping is not None and event["code"] in event_mapping:
+                condition = condition_mapping[event["keys"]["cel#"]]
+                description = f"{event_mapping[event['code']]}_{condition}"
             else:
                 description = event["code"]
             onsets.append(ts)
