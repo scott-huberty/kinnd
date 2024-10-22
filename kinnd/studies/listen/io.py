@@ -3,6 +3,9 @@ import datetime
 
 import mne
 
+from pathlib import Path
+from warnings import warn
+
 def read_raw_listen(filename):
     """Read an MFF file from the Listen study into MNE-Python.
 
@@ -17,6 +20,8 @@ def read_raw_listen(filename):
         The EEG data as an MNE-Python `~mne.io.Raw` object.
     """
     import mffpy
+
+    filename = Path(filename)
 
     mff_reader = mffpy.Reader(filename)
     mff_reader.set_unit("EEG", "V")
@@ -40,9 +45,15 @@ def read_raw_listen(filename):
     eeg, _ = mff_reader.get_physical_samples()["EEG"]
 
     # Events
-    categories = mffpy.XML.from_file(filename / "Events_ECI TCP-IP 55513.xml")
-    events = categories.get_content()["event"]
+    events_xmls = list(filename.glob("Events*.xml"))
+    events_xmls = [fname.name for fname in events_xmls]
+    if not events_xmls:
+        raise RuntimeError(f"No events found in {filename}")
 
+    categories_dict = {}
+    for event_file in events_xmls: 
+        categories = mffpy.XML.from_file(filename / event_file)
+        categories_dict[event_file] = categories.get_content()["event"]
 
     # Create MNE Objects
     ch_names = montage.ch_names
@@ -60,17 +71,23 @@ def read_raw_listen(filename):
     onsets = []
     durations = []
     descriptions = []
-    for event in events:
-        if event["code"] not in WANT_EVENTS:
-            continue
-        onset = event["beginTime"].replace(tzinfo=pytz.timezone("US/Pacific"))
-        onset = onset.astimezone(pytz.utc).replace(tzinfo=datetime.timezone.utc)
-        ts = (onset - raw.info["meas_date"]).total_seconds()
-        duration = event["duration"] / 1000
-        condition = cel_map[str(event["keys"]["cel#"])]
-        description = f"{stim_map[event['code']]}_{condition}"
-        onsets.append(ts)
-        durations.append(duration)
-        descriptions.append(description)
+    for events in categories_dict.values():
+        for event in events:
+            onset = event["beginTime"].replace(tzinfo=pytz.timezone("US/Pacific"))
+            onset = onset.astimezone(pytz.utc).replace(tzinfo=datetime.timezone.utc)
+            ts = (onset - raw.info["meas_date"]).total_seconds()
+            duration = event["duration"] / 1000
+            if event["code"] in ["bgin", "TRSP", "SESS", "CELL", "Isi+"]:
+                # Skip these events to keep the annotations clean
+                # Isi+ is weird because the onset is outside the recording. Corrupted?
+                continue
+            elif event["code"] in WANT_EVENTS:
+                condition = cel_map[str(event["keys"]["cel#"])]
+                description = f"{stim_map[event['code']]}_{condition}"
+            else:
+                description = event["code"]
+            onsets.append(ts)
+            durations.append(duration)
+            descriptions.append(description)
     raw.set_annotations(mne.Annotations(onsets, durations, descriptions))
     return raw
