@@ -1,6 +1,8 @@
 """Some semantics files have typo in the filename. This script renames them."""
 import argparse
 
+import sys
+
 from pathlib import Path
 from warnings import warn
 
@@ -11,7 +13,8 @@ import kinnd
 import mne
 import mne_bids
 
-lab_server_is_mounted = kinnd.utils.paths.lab_server_is_mounted(strict=False)
+# This script assumes that the lab server is mounted on a Mac.
+lab_server_is_mounted = kinnd.utils.paths.lab_server_is_mounted(strict=True)
 
 EVENT_IDS = {
             "BAD_ACQ_SKIP": 0,
@@ -21,6 +24,12 @@ EVENT_IDS = {
             "word_match": 3,
             "word_mismatch": 4,
             "net": 5, # user defined?
+            # Phonemes
+            "tone_Standard": 10,
+            "tone_Deviant": 11,
+            # Resting
+            "rest": 20,
+            "Devt": 21,
             # Stimtracker events
             "DIN6": 56,
             "DIN8": 58,
@@ -29,28 +38,42 @@ EVENT_IDS = {
             "CELL": 61,
             "SESS": 62,
             "TRSP": 63,
+            "isi+": 64,
             }
 
-SKIP_FILES = list((kinnd.utils.paths.listen_path().parent / "data" / "bids").glob("sub-*"))
-SKIP_FILES = [f.name for f in SKIP_FILES]
-
 def bidsify_listen_files(task=None):
-    """Rename the Semantics files with typos in the filename."""
-    if not lab_server_is_mounted:
-        raise FileNotFoundError("Lab server not mounted.")
+    """BIDS Sanitize the Listen EEG files."""
     broot = kinnd.utils.paths.listen_path().parent / "data" / "bids"
     fname = broot.parent / "eeg_list.csv"
     df = pd.read_csv(fname, header=0)
 
     for tup in df.itertuples():
-        if f"sub-{tup.subject}" in SKIP_FILES:
-            continue
         if pd.isnull(tup.task):
-            warn(f"Skipping {tup.subject}_ses-{tup.session:02d} because it has no task.")
+            warn(
+                 f"Skipping {tup.subject}_ses-{tup.session:02d} because it has no task.",
+                 stacklevel=2,
+                 )
             continue
-        if task != tup.task:
+        if Path(tup.bidsfile).exists():
+                    warn(
+                         f"Skipping {tup.subject}_ses-{tup.session:02d} because it already exists.",
+                         stacklevel=2,
+                         )
+                    continue
+        if task is not None and task != tup.task:
+            warn(
+                 f"Skipping {tup.subject}_ses-{tup.session:02d}_{tup.task} because it is not {task}.",
+                 stacklevel=2,)
             continue
-        raw = kinnd.studies.listen.io.read_raw_listen(tup.sourcefile)
+        if task == "semantics":
+            event_mapping = {"img+": "image", "snd+": "word"}
+        elif task == "phonemes":
+            event_mapping = {"stm+": "tone"}
+        else:
+            event_mapping = None
+        raw = kinnd.studies.listen.io.read_raw_listen(
+            tup.sourcefile, event_mapping=event_mapping
+            )
 
         subject = str(tup.subject)
         session = f"{tup.session:02d}"
