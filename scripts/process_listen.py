@@ -1,7 +1,7 @@
 import argparse
-import sys
 
 from pathlib import Path
+from warnings import warn
 
 import pandas as pd
 
@@ -22,6 +22,17 @@ def process_one_subject(bpath):
     task = bpath.task
     broot = bpath.root
     raw = mne_bids.read_raw_bids(bpath)
+    raw.info["bads"].extend(["E125", "E126", "E127", "E128"])
+
+    # Save Outputs
+    dpath = broot.parent / "derivatives" / "pylossless" / f"sub-{subject}"
+    dpath.mkdir(exist_ok=True, parents=False)
+    dpath = dpath / f"ses-{session}"
+    dpath.mkdir(exist_ok=True, parents=False)
+    dname = f"sub-{subject}_ses-{session}_task-{task}_desc-cleaned_eeg.fif"
+    if (dpath / dname).exists():
+        warn(f"SKIPPING: {dname} output already exists at {dpath}.")
+        return
 
     # Find Breaks
     break_annots = mne.preprocessing.annotate_break(raw)
@@ -33,24 +44,20 @@ def process_one_subject(bpath):
     rejection_policy = ll.RejectionPolicy()
     cleaned_raw = rejection_policy.apply(pipeline)
 
-    # Save Outputs
-    dpath = broot.parent / "derivatives" / "pylossless" / f"sub-{subject}"
-    dpath.mkdir(exist_ok=False, parents=False)
-    dpath = dpath / f"ses-{session}"
-    dpath.mkdir(exist_ok=False, parents=False)
-
-    basename = f"{subject}_ses-{session}_task-{task}"
+    basename = f"sub-{subject}_ses-{session}_task-{task}"
     eeg_out = dpath / f"{basename}_desc-cleaned_eeg.fif"
     cleaned_raw.save(eeg_out)
-    ica_out = dpath / f"{basename}_desc-ica.fif"
-    pipeline.ica2.save(ica_out)
-    labels_out = dpath / f"{basename}_desc-iclabels.csv"
+    ica1_out = dpath / f"{basename}_desc-fastica_ica.fif"
+    ica2_out = dpath / f"{basename}_desc-infomax_ica.fif"
+    pipeline.ica1.save(ica1_out)
+    pipeline.ica2.save(ica2_out)
+    labels_out = dpath / f"{basename}_iclabels.csv"
     pipeline.flags["ic"].to_csv(labels_out)
 
 
-def get_pylossless_config(broot):
+def get_pylossless_config(bpath):
     """Get the PyLossless config file"""
-    broot = Path(broot)
+    broot = Path(bpath.root)
     config = ll.config.Config()
     config_fpath = broot.parent / "listen_pylossless_config.yaml"
     if not config_fpath.exists():
@@ -80,30 +87,29 @@ def get_pylossless_config(broot):
     return config_fpath
 
 
-def process_dataset(bpath, config_fpath):
+def process_dataset(broot, task=None):
     csv_fpath = broot.parent / "eeg_list.csv"
-    df = pd.read_csv(csv_fpath, index=0)
+    df = pd.read_csv(csv_fpath, header=0)
 
     for tup in df.itertuples():
         subject = str(tup.subject)
-        task = tup.task
         session = f"{tup.session:02d}"
-        bpath = mne_bids.BIDSPath(subject=subject, session=session, task=task, root=broot)
-
-        if task != "semantics":
+        if tup.task != task:
+            warn(f"SKIPPING: sub-{subject}_ses-{session}_task-{tup.task} because only the {task} task was requested")
             continue
-        process_one_subject(bpath, config_fpath)
+        bpath = mne_bids.BIDSPath(subject=subject, session=session, task=tup.task, root=broot)
+        process_one_subject(bpath)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--subject", dest="subject", type=str, required=True)
-    # parser.add_argument("--session", dest="session", type=str, required=True)
-    """parser.add_argument(
+    parser.add_argument("--subject", dest="subject", type=str, default=None)
+    parser.add_argument("--session", dest="session", type=str, default=None)
+    parser.add_argument(
         "--task",
         dest="task",
         type=str,
-        required=True,
+        default=None,
         choices=["semantics", "phonemes", "resting"]
         )
     parser.add_argument("--bids_root", dest="bids_root", type=Path, default=None)
@@ -113,15 +119,14 @@ if __name__ == "__main__":
     broot = args.bids_root
     if broot is None:
         broot = kinnd.paths.listen_path().parent / "data" / "bids"
-    broot = Path(broot).expanduser().resolve()"""
-    broot = Path.home() / "data" / "bids"
-    subs = list(broot.glob("sub-*"))
-    no = sys.argv[1]
+    broot = Path(broot).expanduser().resolve()
 
-    config_fpath = get_pylossless_config(broot)
-    subject = f"{args.subject}"
-    session = args.session.zfill(2)
-    task = f"{args.task}"
-
-    bpath = mne_bids.BIDSPath(subject=subject, session=session, task=task, root=broot)
-    process_one_subject(bpath)
+    subject = args.subject
+    if subject is None:
+        process_dataset(broot, task=args.task)
+    else:
+        subject = f"{args.subject}"
+        session = args.session.zfill(2)
+        task = f"{args.task}"
+        bpath = mne_bids.BIDSPath(subject=subject, session=session, task=task, root=broot)
+        process_one_subject(bpath)
