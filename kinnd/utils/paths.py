@@ -26,10 +26,8 @@ def lab_server_is_mounted(strict=True):
     return False
 
 
-def lab_server_path(strict=True):
+def lab_server_path():
     """Return the path to the lab server."""
-    if strict:
-        lab_server_is_mounted()
     if sys.platform == "darwin":
         return Path("/Volumes") / "neurology_share"
     elif sys.platform == "linux":
@@ -51,12 +49,12 @@ def semantics_path():
 
 def get_listen_path(strict=True):
     """Return the path to the Listen data on the lab server.
-    
+
     Parameters
     ----------
     strict : bool
         if ``True`` (default), will raise an error if the lab server is not mounted.
-    
+
     Returns
     -------
     pathlib.Path
@@ -139,7 +137,7 @@ def get_listen_fpaths(directory=None):
     from collections import defaultdict
 
     if directory is None:
-        directory = listen_path()
+        directory = get_listen_path()
     directory = check_directory(directory)
     fpaths = get_eeg_fpaths(study="listen", directory=directory)
     subject_dict = defaultdict(dict)

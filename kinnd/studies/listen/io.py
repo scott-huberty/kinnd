@@ -88,7 +88,7 @@ def read_raw_listen(filename, event_mapping=None, condition_mapping=None):
         raise RuntimeError(f"No events found in {filename}")
 
     categories_dict = {}
-    for event_file in events_xmls: 
+    for event_file in events_xmls:
         categories = mffpy.XML.from_file(filename / event_file)
         categories_dict[event_file] = categories.get_content()["event"]
 
@@ -142,7 +142,8 @@ def read_processed_listen(subject, task, session=1, listen_fpath=None):
     task : str
         The experimental task. Must be one of "semantics" or "phonemes".
     session : int | str
-        The session (visit). Must be 1 or 2. If a string, it can be "1", "2", "01", or "02".
+        The session (visit). Must be 1 or 2. If a string, it can be "1", "2", "01", or
+        "02".
     listen_fpath : str | pathlib.Path | None
         If you are not connected to the lab server, the relative or absolute path to the
         LISTEN project directory (assuming that you have copied the folder from the lab
@@ -151,40 +152,43 @@ def read_processed_listen(subject, task, session=1, listen_fpath=None):
         attempt to access the data on the lab server, meaning that you should have the
         lab server mounted to your local hard drive.
     """
-    from kinnd.utils.paths import get_listen_path()
-    
+    from kinnd.utils.paths import get_listen_path
+
     # Sanity Checks
-    _validate_type(subject, str)
-    _validate_type(task, str)
-    _validate_type(session, (int, str))
-    _validate_dtype(listen_fpath, (str, Path, None))
+    _validate_type("subject", subject, str)
+    _validate_type("task", task, str)
+    _validate_type("session", session, (int, str))
+    _validate_type("listen_fpath", listen_fpath, (str, Path, None))
     # Sanitize
     session = str(session).zfill(2)
 
-    if not listen_fpath:    
-        broot = get_listen_path() / "bids"
+    if not listen_fpath:
+        droot = get_listen_path() / "data" / "derivatives" / "pylossless"
     else:
-        broot = (listen_fpath / "bids").expanduser.resolve()
-    if not broot.exists():
-        raise FileNotFoundError(f"{broot} does not exist.")
-    bpath = mne_bids.BIDSPath(
-        root=broot,
-        subject=subject,
-        session=session,
-        task=task,
-        )
-    
+        droot = (listen_fpath /
+                 "data" /
+                 "derivatives" /
+                 "pylossless").expanduser.resolve()
+    if not droot.exists():
+        raise FileNotFoundError(f"{droot} does not exist.")
+    sub_path = (
+        droot /
+        f"sub-{subject}" /
+        f"ses-{session}" /
+        f"sub-{subject}_ses-{session}_task-{task}_desc-cleaned_eeg.fif"
+    )
+    return mne.io.read_raw(sub_path)
+
 
 
 def _validate_type(parameter, argument, expected):
     """Validate that the user passed an argument that is a valid type for the parameter.
-    
+
     Parameters
     ----------
-
     parameter : str
         The name of the parameter.
-    argument : 
+    argument : str | int | float | bool | list | tuple | dict
         The argument that the user passed
     expected : builtin type | tuple | list
         The type that the argument is expected to belong to. For
@@ -192,11 +196,19 @@ def _validate_type(parameter, argument, expected):
         types, if the argument can be one of many.
     """
     from collections.abc import Iterable
+
+    expected = (expected,) if not isinstance(expected, Iterable) else expected
+    # doing a state check on None is tricky
+    expected = tuple(
+        [
+        type(this_type)
+        if this_type is None
+        else this_type
+        for this_type in expected
+        ]
+        )
     if not isinstance(argument, expected):
         # Sanitize
-        expected = (expected) if not isinstance(expected, Iterable) else expected
-        # doing a state check on None is tricky
-        expected = [type(this_type) for this_type in expected if this_type is None else this_type]
         raise ValueError(
             f"{parameter} must be of type"
             f" {' or '.join(str(this_type) for this_type in expected)}"
