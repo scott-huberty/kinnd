@@ -38,12 +38,10 @@ EVENT_IDS = {
             "CELL": 61,
             "SESS": 62,
             "TRSP": 63,
-            # Misc Experiment
             "isi+": 64,
-            "IEND": 65,
             }
 
-def bidsify_listen_files(task=None, overwrite=False):
+def bidsify_listen_files(task=None):
     """BIDS Sanitize the Listen EEG files."""
     broot = kinnd.utils.paths.listen_path().parent / "data" / "bids"
     fname = broot.parent / "eeg_list.csv"
@@ -56,33 +54,25 @@ def bidsify_listen_files(task=None, overwrite=False):
                  stacklevel=2,
                  )
             continue
-        if task is not None and task != tup.task:
-            warn(
-                 f"Skipping {tup.subject}_ses-{tup.session:02d}_{tup.task} because only the {task} task was requested.",
-                 stacklevel=2,)
-            continue
         if Path(tup.bidsfile).exists():
                     warn(
-                         f"Skipping {tup.subject}_ses-{tup.session:02d}_{tup.task} because it already exists.",
+                         f"Skipping {tup.subject}_ses-{tup.session:02d} because it already exists.",
                          stacklevel=2,
                          )
                     continue
-
+        if task is not None and task != tup.task:
+            warn(
+                 f"Skipping {tup.subject}_ses-{tup.session:02d}_{tup.task} because it is not {task}.",
+                 stacklevel=2,)
+            continue
         if task == "semantics":
             event_mapping = {"img+": "image", "snd+": "word"}
         elif task == "phonemes":
             event_mapping = {"stm+": "tone"}
         else:
             event_mapping = None
-        if tup.task == "phonemes" and tup.subject in [2055, 2058, 2068]:
-            # Special case where this is missing from the file
-            condition_mapping = {1: "Standard", 2: "Deviant"}
-        else:
-            condition_mapping = None
         raw = kinnd.studies.listen.io.read_raw_listen(
-            tup.sourcefile,
-            event_mapping=event_mapping,
-            condition_mapping=condition_mapping,
+            tup.sourcefile, event_mapping=event_mapping
             )
 
         subject = str(tup.subject)
@@ -100,7 +90,7 @@ def bidsify_listen_files(task=None, overwrite=False):
         mne_bids.write.write_raw_bids(
             raw=raw,
             bids_path=bpath,
-            overwrite=overwrite,
+            overwrite=False,
             event_id=EVENT_IDS,
             allow_preload=True,
             format="EDF",
@@ -109,7 +99,6 @@ def bidsify_listen_files(task=None, overwrite=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", dest="task", default=None, type=str)
-    parser.add_argument("--overwrite", dest="overwrite", default=False, choices=[True, False], type=bool)
+    parser.add_argument("--task", default=None, type=str)
     args = parser.parse_args()
-    bidsify_listen_files(task=args.task, overwrite=args.overwrite)
+    bidsify_listen_files(task=args.task)
