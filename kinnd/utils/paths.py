@@ -26,8 +26,10 @@ def lab_server_is_mounted(strict=True):
     return False
 
 
-def lab_server_path():
+def lab_server_path(strict=True):
     """Return the path to the lab server."""
+    if strict:
+        lab_server_is_mounted()
     if sys.platform == "darwin":
         return Path("/Volumes") / "neurology_share"
     elif sys.platform == "linux":
@@ -47,9 +49,9 @@ def semantics_path():
     return lab_server_path() / "charlotte_semantics_data"
 
 
-def listen_path():
+def listen_path(strict=True):
     """Return the path to the Listen data on the lab server."""
-    return lab_server_path() / "LISTEN" / "Participant Files"
+    return lab_server_path(strict=strict) / "LISTEN"
 
 
 def get_eeg_fpaths(study="semantics", directory=None):
