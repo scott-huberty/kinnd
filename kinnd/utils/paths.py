@@ -49,8 +49,19 @@ def semantics_path():
     return lab_server_path() / "charlotte_semantics_data"
 
 
-def listen_path(strict=True):
-    """Return the path to the Listen data on the lab server."""
+def get_listen_path(strict=True):
+    """Return the path to the Listen data on the lab server.
+    
+    Parameters
+    ----------
+    strict : bool
+        if ``True`` (default), will raise an error if the lab server is not mounted.
+    
+    Returns
+    -------
+    pathlib.Path
+        the path to the LISTEN directory on the lab server.
+    """
     return lab_server_path(strict=strict) / "LISTEN"
 
 

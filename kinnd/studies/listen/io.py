@@ -174,7 +174,6 @@ def read_processed_listen(subject, task, session=1, listen_fpath=None):
         task=task,
         )
     
-    
 
 
 def _validate_type(parameter, argument, expected):
