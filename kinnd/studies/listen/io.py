@@ -22,7 +22,7 @@ def get_cel_map(events_eci):
         if event["code"] == "CELL":
             at_cell_events = True
         if at_cell_events:
-            cel_map[event["keys"]["cel#"]] = event["label"]
+            cel_map[int(event["keys"]["cel#"])] = event["label"]
     return cel_map
 
 
@@ -122,7 +122,7 @@ def read_raw_listen(filename, event_mapping=None, condition_mapping=None):
                 # Isi+ is weird because the onset is outside the recording. Corrupted?
                 continue
             elif event_mapping is not None and event["code"] in event_mapping:
-                condition = condition_mapping[event["keys"]["cel#"]]
+                condition = condition_mapping[int(event["keys"]["cel#"])]
                 description = f"{event_mapping[event['code']]}_{condition}"
             else:
                 description = event["code"]
