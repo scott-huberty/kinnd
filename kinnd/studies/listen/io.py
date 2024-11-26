@@ -132,7 +132,15 @@ def read_raw_listen(filename, event_mapping=None, condition_mapping=None):
     return raw
 
 
-def read_processed_listen(subject, task, session=1, listen_fpath=None):
+def read_processed_listen(
+    subject,
+    *,
+    task,
+    session=1,
+    derivative="pylossless",
+    listen_fpath=None,
+    read_raw_kwargs=None
+    ):
     """Read a processed (cleaned) derivative file from the LISTEN study.
 
     Parameters
@@ -151,6 +159,9 @@ def read_processed_listen(subject, task, session=1, listen_fpath=None):
         server, with a 'bids' sub directory. If ``None`` is passed, then the code will
         attempt to access the data on the lab server, meaning that you should have the
         lab server mounted to your local hard drive.
+    read_raw_kwargs : dict
+        a dictionary of keyword arguments that can be passed to ``mne.io.read_raw``.
+        For example, ``dict(preload=True)`` or ``"{"preload": True}"``
     """
     from kinnd.utils.paths import get_listen_path
 
@@ -159,26 +170,45 @@ def read_processed_listen(subject, task, session=1, listen_fpath=None):
     _validate_type("task", task, str)
     _validate_type("session", session, (int, str))
     _validate_type("listen_fpath", listen_fpath, (str, Path, None))
+    _validate_type("derivative", derivative, str)
+    if derivative not in ["pylossless", "mne-bids-pipeline"]:
+        raise ValueError("derivative must be 'pylossless' or 'mne-bids-pipeline'.")
     # Sanitize
     session = str(session).zfill(2)
 
     if not listen_fpath:
-        droot = get_listen_path() / "data" / "derivatives" / "pylossless"
+        droot = get_listen_path() / "data" / "derivatives" / derivative
     else:
         droot = (listen_fpath /
                  "data" /
                  "derivatives" /
-                 "pylossless").expanduser.resolve()
+                 derivative).expanduser.resolve()
     if not droot.exists():
         raise FileNotFoundError(f"{droot} does not exist.")
-    sub_path = (
-        droot /
-        f"sub-{subject}" /
-        f"ses-{session}" /
-        f"sub-{subject}_ses-{session}_task-{task}_desc-cleaned_eeg.fif"
-    )
-    return mne.io.read_raw(sub_path)
 
+    sub_path = droot / f"sub-{subject}" / f"ses-{session}"
+    if derivative == "pylossless":
+        fname = sub_path / f"sub-{subject}_ses-{session}_task-{task}_desc-cleaned_eeg.fif"
+        return mne.io.read_raw(fname, **read_raw_kwargs)
+
+    elif derivative == "mne-bids-pipeline":
+        from mne_icalabel import label_components
+        import pandas as pd
+
+        base_name = f"sub-{subject}_ses-{session}_task-{task}"
+        fname = sub_path / "eeg" / f"{base_name}_proc-icafit_epo.fif"
+        fname_ica = sub_path / "eeg" / f"{base_name}_proc-icafit_ica.fif"
+        epochs = mne.read_epochs(fname)
+        ica = mne.preprocessing.read_ica(fname_ica)
+
+        df = pd.DataFrame(
+            label_components(epochs, ica, method="iclabel")
+            ).rename(columns={"y_pred_proba": "confidence", "labels": "label"})
+        exclude_idx = df[(~df["label"].isin(["brain", "other"])) & (df["confidence"] >= .5)].index
+        ica.apply(epochs, exclude=exclude_idx)
+        return epochs
+    else:
+        raise ValueError("derivative must be 'pylossless' or 'mne-bids-pipeline'")
 
 
 def _validate_type(parameter, argument, expected):

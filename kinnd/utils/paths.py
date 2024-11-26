@@ -60,7 +60,7 @@ def get_listen_path(strict=True):
     pathlib.Path
         the path to the LISTEN directory on the lab server.
     """
-    return lab_server_path(strict=strict) / "LISTEN"
+    return lab_server_path() / "LISTEN"
 
 
 def get_eeg_fpaths(study="semantics", directory=None):
