@@ -1,0 +1,9 @@
+﻿kinnd.add\_file\_handler
+========================
+
+.. currentmodule:: kinnd
+
+.. autofunction:: add_file_handler
+
+.. minigallery:: kinnd.add_file_handler
+    :add-heading:
